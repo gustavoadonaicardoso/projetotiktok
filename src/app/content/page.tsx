@@ -1,24 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, Upload, Video, Clock, CheckCircle } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { VideoCard } from "@/components/content/VideoCard";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase-browser";
 import type { Video as VideoType } from "@/types";
-
-const mockVideos: VideoType[] = [
-  { id: "1", title: "A Armadura de Deus - Parte 1", description: "Efésios 6:10-18", file_url: "#", status: "published", platform: "both", published_at: "2024-01-15T10:00:00Z", created_at: "2024-01-10T00:00:00Z", updated_at: "2024-01-15T10:00:00Z" },
-  { id: "2", title: "Salmos 23 - Reflexão Diária", description: "O Senhor é o meu pastor...", file_url: "#", status: "scheduled", platform: "tiktok", scheduled_at: "2024-02-01T18:00:00Z", created_at: "2024-01-20T00:00:00Z", updated_at: "2024-01-20T00:00:00Z" },
-  { id: "3", title: "Poder da Oração", description: "A oração transforma", file_url: "#", status: "published", platform: "instagram", published_at: "2024-01-12T14:00:00Z", created_at: "2024-01-08T00:00:00Z", updated_at: "2024-01-12T14:00:00Z" },
-  { id: "4", title: "Fé Move Montanhas", description: "Mateus 17:20", file_url: "#", status: "draft", platform: "both", created_at: "2024-01-22T00:00:00Z", updated_at: "2024-01-22T00:00:00Z" },
-];
-
-const mockMetrics: Record<string, { views: number; likes: number; comments: number; shares: number }> = {
-  "1": { views: 45000, likes: 3200, comments: 480, shares: 890 },
-  "3": { views: 28000, likes: 1900, comments: 240, shares: 450 },
-};
 
 const filters = [
   { label: "Todos", value: "all" },
@@ -28,11 +16,21 @@ const filters = [
 ];
 
 export default function ContentPage() {
+  const [videos, setVideos] = useState<VideoType[]>([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [showUpload, setShowUpload] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = mockVideos.filter((v) => {
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.from("videos").select("*").order("created_at", { ascending: false }).then(({ data }) => {
+      setVideos((data as VideoType[]) ?? []);
+      setLoading(false);
+    });
+  }, []);
+
+  const filtered = videos.filter((v) => {
     const matchesFilter = activeFilter === "all" || v.status === activeFilter;
     const matchesSearch = v.title.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
@@ -85,15 +83,7 @@ export default function ContentPage() {
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.05)", borderRadius: 8, padding: 4 }}>
           {filters.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setActiveFilter(f.value)}
-              style={{
-                padding: "6px 12px", borderRadius: 6, fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer",
-                background: activeFilter === f.value ? "#7c3aed" : "transparent",
-                color: activeFilter === f.value ? "#fff" : "rgba(255,255,255,0.4)",
-              }}
-            >
+            <button key={f.value} onClick={() => setActiveFilter(f.value)} style={{ padding: "6px 12px", borderRadius: 6, fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer", background: activeFilter === f.value ? "#7c3aed" : "transparent", color: activeFilter === f.value ? "#fff" : "rgba(255,255,255,0.4)" }}>
               {f.label}
             </button>
           ))}
@@ -105,31 +95,45 @@ export default function ContentPage() {
       </div>
 
       {/* Summary */}
-      <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
-        {[
-          { icon: <CheckCircle style={{ width: 13, height: 13, color: "#4ade80" }} />, count: mockVideos.filter(v => v.status === "published").length, label: "publicados" },
-          { icon: <Clock style={{ width: 13, height: 13, color: "#60a5fa" }} />, count: mockVideos.filter(v => v.status === "scheduled").length, label: "agendados" },
-          { icon: <Video style={{ width: 13, height: 13, color: "rgba(255,255,255,0.3)" }} />, count: mockVideos.filter(v => v.status === "draft").length, label: "rascunhos" },
-        ].map((s, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
-            {s.icon} {s.count} {s.label}
-          </div>
-        ))}
-      </div>
+      {videos.length > 0 && (
+        <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
+          {[
+            { icon: <CheckCircle style={{ width: 13, height: 13, color: "#4ade80" }} />, count: videos.filter(v => v.status === "published").length, label: "publicados" },
+            { icon: <Clock style={{ width: 13, height: 13, color: "#60a5fa" }} />, count: videos.filter(v => v.status === "scheduled").length, label: "agendados" },
+            { icon: <Video style={{ width: 13, height: 13, color: "rgba(255,255,255,0.3)" }} />, count: videos.filter(v => v.status === "draft").length, label: "rascunhos" },
+          ].map((s, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
+              {s.icon} {s.count} {s.label}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Video List */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "64px 0", color: "rgba(255,255,255,0.25)" }}>
-            <Video style={{ width: 48, height: 48, margin: "0 auto 12px", opacity: 0.3 }} />
-            <p>Nenhum vídeo encontrado</p>
-          </div>
-        ) : (
-          filtered.map((video) => (
-            <VideoCard key={video.id} video={video} metrics={mockMetrics[video.id]} />
-          ))
-        )}
-      </div>
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(255,255,255,0.25)", fontSize: 14 }}>Carregando...</div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "64px 0" }}>
+          <Video style={{ width: 48, height: 48, color: "rgba(255,255,255,0.12)", margin: "0 auto 16px" }} />
+          <p style={{ fontSize: 15, fontWeight: 500, color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>
+            {videos.length === 0 ? "Nenhum vídeo ainda" : "Nenhum resultado"}
+          </p>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.25)", marginBottom: 20 }}>
+            {videos.length === 0 ? "Clique em \"Novo Vídeo\" para adicionar seu primeiro conteúdo" : "Tente outro filtro ou busca"}
+          </p>
+          {videos.length === 0 && (
+            <Button onClick={() => setShowUpload(true)}>
+              <Plus style={{ width: 13, height: 13 }} /> Adicionar vídeo
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {filtered.map((video) => (
+            <VideoCard key={video.id} video={video} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
