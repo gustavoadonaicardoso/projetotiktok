@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { EngagementChart } from "@/components/analytics/EngagementChart";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
-import { Eye, Heart, Users, MessageCircle, Share2, TrendingUp } from "lucide-react";
+import { Eye, Heart, Users, TrendingUp } from "lucide-react";
 
-const generateChartData = (metric: string, days = 30) => {
+const generateChartData = (days = 30) => {
   const data = [];
   const today = new Date();
   for (let i = days - 1; i >= 0; i--) {
@@ -31,15 +31,15 @@ const topVideos = [
   { title: "A Graça de Deus", tiktokViews: 19000, igViews: 8000, likes: 1100, engagement: 5.3 },
 ];
 
+const platformStats = {
+  tiktok: { followers: 8200, likes: 62000, views: 230000, engagement: 6.8 },
+  instagram: { followers: 4200, likes: 27200, views: 110000, engagement: 5.9 },
+};
+
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<7 | 30 | 90>(30);
-  const viewsData = generateChartData("views", period);
-  const likesData = generateChartData("likes", period);
-
-  const platformStats = {
-    tiktok: { followers: 8200, likes: 62000, views: 230000, engagement: 6.8 },
-    instagram: { followers: 4200, likes: 27200, views: 110000, engagement: 5.9 },
-  };
+  const viewsData = generateChartData(period);
+  const likesData = generateChartData(period);
 
   return (
     <div>
@@ -47,15 +47,9 @@ export default function AnalyticsPage() {
         title="Métricas"
         subtitle="Análise de desempenho das suas plataformas"
         action={
-          <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
+          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.05)", borderRadius: 8, padding: 4 }}>
             {([7, 30, 90] as const).map((p) => (
-              <Button
-                key={p}
-                variant={period === p ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setPeriod(p)}
-                className={period !== p ? "text-white/40" : ""}
-              >
+              <Button key={p} variant={period === p ? "default" : "ghost"} size="sm" onClick={() => setPeriod(p)}>
                 {p}d
               </Button>
             ))}
@@ -64,87 +58,65 @@ export default function AnalyticsPage() {
       />
 
       {/* Platform Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {/* TikTok */}
-        <Card className="border-[#fe2c55]/20">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-[#fe2c55] rounded-lg flex items-center justify-center">
-              <span className="text-white text-xs font-bold">T</span>
-            </div>
-            <span className="font-semibold text-white">TikTok</span>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { icon: <Users className="w-4 h-4" />, label: "Seguidores", value: platformStats.tiktok.followers },
-              { icon: <Heart className="w-4 h-4" />, label: "Curtidas", value: platformStats.tiktok.likes },
-              { icon: <Eye className="w-4 h-4" />, label: "Views", value: platformStats.tiktok.views },
-              { icon: <TrendingUp className="w-4 h-4" />, label: "Engajamento", value: platformStats.tiktok.engagement, suffix: "%" },
-            ].map((s, i) => (
-              <div key={i} className="p-3 rounded-lg bg-white/5">
-                <div className="flex items-center gap-1.5 text-[#fe2c55] mb-1">{s.icon}</div>
-                <p className="text-white font-semibold">{formatNumber(s.value)}{s.suffix ?? ""}</p>
-                <p className="text-white/40 text-xs">{s.label}</p>
+      <div className="platform-grid">
+        {[
+          { label: "TikTok", color: "#fe2c55", textColor: "#fe2c55", abbr: "T", stats: platformStats.tiktok },
+          { label: "Instagram", gradient: "linear-gradient(135deg,#7c3aed,#db2777)", textColor: "#a78bfa", abbr: "IG", stats: platformStats.instagram },
+        ].map((platform) => (
+          <Card key={platform.label}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 32, height: 32, background: platform.gradient ?? platform.color, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>{platform.abbr}</span>
               </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Instagram */}
-        <Card className="border-purple-500/20">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-xs">IG</span>
+              <span style={{ fontWeight: 600, color: "#fff" }}>{platform.label}</span>
             </div>
-            <span className="font-semibold text-white">Instagram</span>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { icon: <Users className="w-4 h-4" />, label: "Seguidores", value: platformStats.instagram.followers },
-              { icon: <Heart className="w-4 h-4" />, label: "Curtidas", value: platformStats.instagram.likes },
-              { icon: <Eye className="w-4 h-4" />, label: "Views", value: platformStats.instagram.views },
-              { icon: <TrendingUp className="w-4 h-4" />, label: "Engajamento", value: platformStats.instagram.engagement, suffix: "%" },
-            ].map((s, i) => (
-              <div key={i} className="p-3 rounded-lg bg-white/5">
-                <div className="flex items-center gap-1.5 text-purple-400 mb-1">{s.icon}</div>
-                <p className="text-white font-semibold">{formatNumber(s.value)}{s.suffix ?? ""}</p>
-                <p className="text-white/40 text-xs">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
+            <div className="stat-mini">
+              {[
+                { icon: <Users style={{ width: 14, height: 14 }} />, label: "Seguidores", value: platform.stats.followers },
+                { icon: <Heart style={{ width: 14, height: 14 }} />, label: "Curtidas", value: platform.stats.likes },
+                { icon: <Eye style={{ width: 14, height: 14 }} />, label: "Views", value: platform.stats.views },
+                { icon: <TrendingUp style={{ width: 14, height: 14 }} />, label: "Engajamento", value: platform.stats.engagement, suffix: "%" },
+              ].map((s, i) => (
+                <div key={i} className="stat-mini-item">
+                  <div style={{ color: platform.textColor }}>{s.icon}</div>
+                  <div className="val">{formatNumber(s.value)}{s.suffix ?? ""}</div>
+                  <div className="lbl">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        ))}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      <div className="charts-grid">
         <EngagementChart data={viewsData} metric="views" title="Visualizações por Plataforma" />
         <EngagementChart data={likesData} metric="likes" title="Curtidas por Plataforma" />
       </div>
 
       {/* Top Videos */}
       <Card>
-        <CardHeader>
-          <CardTitle>Melhores Vídeos</CardTitle>
-        </CardHeader>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <CardTitle>Melhores Vídeos</CardTitle>
+        <div className="table-wrapper" style={{ marginTop: 16 }}>
+          <table>
             <thead>
-              <tr className="text-left text-xs text-white/30 border-b border-white/10">
-                <th className="pb-3 pr-4">Título</th>
-                <th className="pb-3 pr-4 text-right">TikTok Views</th>
-                <th className="pb-3 pr-4 text-right">IG Views</th>
-                <th className="pb-3 pr-4 text-right">Curtidas</th>
-                <th className="pb-3 text-right">Engajamento</th>
+              <tr>
+                <th>Título</th>
+                <th style={{ textAlign: "right" }}>TikTok Views</th>
+                <th style={{ textAlign: "right" }}>IG Views</th>
+                <th style={{ textAlign: "right" }}>Curtidas</th>
+                <th style={{ textAlign: "right" }}>Engajamento</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody>
               {topVideos.map((v, i) => (
-                <tr key={i} className="hover:bg-white/5">
-                  <td className="py-3 pr-4 text-sm text-white">{v.title}</td>
-                  <td className="py-3 pr-4 text-sm text-white/60 text-right">{formatNumber(v.tiktokViews)}</td>
-                  <td className="py-3 pr-4 text-sm text-white/60 text-right">{formatNumber(v.igViews)}</td>
-                  <td className="py-3 pr-4 text-sm text-white/60 text-right">{formatNumber(v.likes)}</td>
-                  <td className="py-3 text-right">
-                    <span className="text-green-400 text-sm font-medium">{v.engagement}%</span>
+                <tr key={i}>
+                  <td>{v.title}</td>
+                  <td style={{ textAlign: "right" }}>{formatNumber(v.tiktokViews)}</td>
+                  <td style={{ textAlign: "right" }}>{formatNumber(v.igViews)}</td>
+                  <td style={{ textAlign: "right" }}>{formatNumber(v.likes)}</td>
+                  <td style={{ textAlign: "right" }}>
+                    <span style={{ color: "#4ade80", fontWeight: 600 }}>{v.engagement}%</span>
                   </td>
                 </tr>
               ))}

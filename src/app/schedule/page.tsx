@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, Clock, ChevronLeft, ChevronRight, Video } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, Video } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -18,13 +18,8 @@ const scheduledPosts = [
   { date: "2024-02-14", title: "Amor de Deus", platform: "tiktok", time: "15:00" },
 ];
 
-function getDaysInMonth(year: number, month: number) {
-  return new Date(year, month + 1, 0).getDate();
-}
-
-function getFirstDayOfMonth(year: number, month: number) {
-  return new Date(year, month, 1).getDay();
-}
+function getDaysInMonth(year: number, month: number) { return new Date(year, month + 1, 0).getDate(); }
+function getFirstDayOfMonth(year: number, month: number) { return new Date(year, month, 1).getDay(); }
 
 export default function SchedulePage() {
   const today = new Date();
@@ -35,66 +30,48 @@ export default function SchedulePage() {
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
 
-  const prevMonth = () => {
-    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); }
-    else setCurrentMonth(m => m - 1);
-  };
-  const nextMonth = () => {
-    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); }
-    else setCurrentMonth(m => m + 1);
-  };
+  const prevMonth = () => { if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); } else setCurrentMonth(m => m - 1); };
+  const nextMonth = () => { if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); } else setCurrentMonth(m => m + 1); };
 
-  const getPostsForDate = (day: number) => {
+  const getPostsForDay = (day: number) => {
     const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return scheduledPosts.filter((p) => p.date === dateStr);
   };
 
   const selectedPosts = selectedDate ? scheduledPosts.filter((p) => p.date === selectedDate) : [];
-
-  const upcomingPosts = scheduledPosts
-    .filter((p) => new Date(p.date) >= today)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 5);
+  const upcomingPosts = scheduledPosts.filter((p) => new Date(p.date) >= today).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5);
 
   return (
     <div>
       <Header title="Agendamento" subtitle="Gerencie o calendário de publicações" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="schedule-grid">
         {/* Calendar */}
-        <div className="lg:col-span-2">
+        <div>
           <Card>
-            {/* Month Navigation */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-white">
-                {MONTHS[currentMonth]} {currentYear}
-              </h2>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={prevMonth}>
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={nextMonth}>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
+            {/* Month nav */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: "#fff" }}>{MONTHS[currentMonth]} {currentYear}</h2>
+              <div style={{ display: "flex", gap: 4 }}>
+                <Button variant="ghost" size="sm" onClick={prevMonth}><ChevronLeft style={{ width: 16, height: 16 }} /></Button>
+                <Button variant="ghost" size="sm" onClick={nextMonth}><ChevronRight style={{ width: 16, height: 16 }} /></Button>
               </div>
             </div>
 
             {/* Day headers */}
-            <div className="grid grid-cols-7 mb-2">
+            <div className="calendar-grid" style={{ marginBottom: 8 }}>
               {DAYS.map((d) => (
-                <div key={d} className="text-center text-xs text-white/30 py-2">{d}</div>
+                <div key={d} style={{ textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.3)", padding: "4px 0" }}>{d}</div>
               ))}
             </div>
 
-            {/* Days grid */}
-            <div className="grid grid-cols-7 gap-1">
-              {Array.from({ length: firstDay }).map((_, i) => (
-                <div key={`empty-${i}`} />
-              ))}
+            {/* Days */}
+            <div className="calendar-grid">
+              {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
               {Array.from({ length: daysInMonth }).map((_, i) => {
                 const day = i + 1;
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-                const posts = getPostsForDate(day);
+                const posts = getPostsForDay(day);
                 const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
                 const isSelected = selectedDate === dateStr;
 
@@ -102,28 +79,13 @@ export default function SchedulePage() {
                   <button
                     key={day}
                     onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-                    className={`relative aspect-square flex flex-col items-center justify-start pt-1.5 rounded-lg text-sm transition-colors ${
-                      isSelected
-                        ? "bg-purple-600 text-white"
-                        : isToday
-                        ? "bg-purple-600/20 text-purple-300 border border-purple-500/30"
-                        : "hover:bg-white/5 text-white/60"
-                    }`}
+                    className={`cal-day${isSelected ? " selected" : isToday ? " today" : ""}`}
                   >
                     <span>{day}</span>
                     {posts.length > 0 && (
-                      <div className="flex gap-0.5 mt-0.5">
+                      <div className="cal-dots">
                         {posts.slice(0, 3).map((p, j) => (
-                          <div
-                            key={j}
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              p.platform === "tiktok"
-                                ? "bg-[#fe2c55]"
-                                : p.platform === "instagram"
-                                ? "bg-purple-400"
-                                : "bg-gradient-to-r from-[#fe2c55] to-purple-400"
-                            }`}
-                          />
+                          <div key={j} className="cal-dot" style={{ background: p.platform === "tiktok" ? "#fe2c55" : p.platform === "instagram" ? "#a78bfa" : "#7c3aed" }} />
                         ))}
                       </div>
                     )}
@@ -133,33 +95,30 @@ export default function SchedulePage() {
             </div>
 
             {/* Legend */}
-            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/10">
-              <div className="flex items-center gap-1.5 text-xs text-white/40">
-                <div className="w-2 h-2 rounded-full bg-[#fe2c55]" />TikTok
+            <div style={{ display: "flex", gap: 16, marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fe2c55" }} /> TikTok
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-white/40">
-                <div className="w-2 h-2 rounded-full bg-purple-400" />Instagram
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#a78bfa" }} /> Instagram
               </div>
             </div>
           </Card>
 
-          {/* Selected date posts */}
           {selectedDate && (
-            <Card className="mt-4">
-              <CardHeader>
-                <CardTitle>
-                  Postagens em {new Date(selectedDate + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
-                </CardTitle>
-              </CardHeader>
+            <div className="card" style={{ marginTop: 16 }}>
+              <p className="card-title">
+                Postagens em {new Date(selectedDate + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
+              </p>
               {selectedPosts.length === 0 ? (
-                <p className="text-white/30 text-sm">Nenhuma postagem agendada</p>
+                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>Nenhuma postagem agendada</p>
               ) : (
-                <div className="space-y-2">
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {selectedPosts.map((p, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
-                      <Clock className="w-4 h-4 text-white/30" />
-                      <span className="text-sm text-white/60">{p.time}</span>
-                      <span className="text-sm text-white flex-1">{p.title}</span>
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "rgba(255,255,255,0.04)" }}>
+                      <Clock style={{ width: 14, height: 14, color: "rgba(255,255,255,0.3)" }} />
+                      <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{p.time}</span>
+                      <span style={{ fontSize: 13, color: "#fff", flex: 1 }}>{p.title}</span>
                       <Badge variant={p.platform === "tiktok" ? "error" : p.platform === "instagram" ? "info" : "success"}>
                         {p.platform === "both" ? "Ambos" : p.platform === "tiktok" ? "TikTok" : "Instagram"}
                       </Badge>
@@ -167,28 +126,26 @@ export default function SchedulePage() {
                   ))}
                 </div>
               )}
-            </Card>
+            </div>
           )}
         </div>
 
-        {/* Upcoming */}
-        <div className="space-y-4">
+        {/* Sidebar */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Card>
-            <CardHeader>
-              <CardTitle>Próximas Postagens</CardTitle>
-            </CardHeader>
-            <div className="space-y-3">
+            <CardTitle>Próximas Postagens</CardTitle>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
               {upcomingPosts.map((p, i) => (
-                <div key={i} className="p-3 rounded-lg bg-white/5 border border-white/5">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Video className="w-3.5 h-3.5 text-white/30" />
-                    <span className="text-xs text-white font-medium truncate">{p.title}</span>
+                <div key={i} style={{ padding: "10px 12px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                    <Video style={{ width: 12, height: 12, color: "rgba(255,255,255,0.3)" }} />
+                    <span style={{ fontSize: 12, fontWeight: 500, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/30">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
                       {new Date(p.date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} às {p.time}
                     </span>
-                    <Badge variant={p.platform === "tiktok" ? "error" : p.platform === "instagram" ? "info" : "success"} className="text-xs">
+                    <Badge variant={p.platform === "tiktok" ? "error" : p.platform === "instagram" ? "info" : "success"}>
                       {p.platform === "both" ? "Ambos" : p.platform === "tiktok" ? "TT" : "IG"}
                     </Badge>
                   </div>
@@ -198,22 +155,20 @@ export default function SchedulePage() {
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Melhores Horários</CardTitle>
-            </CardHeader>
-            <div className="space-y-2">
+            <CardTitle>Melhores Horários</CardTitle>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
               {[
-                { time: "18:00 - 20:00", engagement: "Alta", note: "Pós trabalho" },
-                { time: "12:00 - 13:00", engagement: "Média", note: "Almoço" },
-                { time: "08:00 - 09:00", engagement: "Média", note: "Manhã" },
-                { time: "21:00 - 22:00", engagement: "Alta", note: "Noite" },
+                { time: "18:00 - 20:00", note: "Pós trabalho", eng: "success" as const },
+                { time: "21:00 - 22:00", note: "Noite", eng: "success" as const },
+                { time: "12:00 - 13:00", note: "Almoço", eng: "warning" as const },
+                { time: "08:00 - 09:00", note: "Manhã", eng: "warning" as const },
               ].map((h, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-white/5">
+                <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.04)" }}>
                   <div>
-                    <p className="text-sm text-white">{h.time}</p>
-                    <p className="text-xs text-white/30">{h.note}</p>
+                    <p style={{ fontSize: 13, color: "#fff" }}>{h.time}</p>
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{h.note}</p>
                   </div>
-                  <Badge variant={h.engagement === "Alta" ? "success" : "warning"}>{h.engagement}</Badge>
+                  <Badge variant={h.eng}>{h.eng === "success" ? "Alta" : "Média"}</Badge>
                 </div>
               ))}
             </div>
