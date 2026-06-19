@@ -1,6 +1,5 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { cn, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 
 interface StatsCardProps {
   title: string;
@@ -12,35 +11,23 @@ interface StatsCardProps {
   suffix?: string;
 }
 
-export function StatsCard({ title, value, growth, icon, color, prefix = "", suffix = "" }: StatsCardProps) {
+export function StatsCard({ title, value, growth, icon, prefix = "", suffix = "" }: StatsCardProps) {
   const isPositive = growth >= 0;
 
   return (
-    <Card className="relative overflow-hidden">
-      <div className={cn("absolute inset-0 opacity-5", color)} />
-      <div className="relative">
-        <div className="flex items-start justify-between mb-4">
-          <div className={cn("p-2.5 rounded-xl", color.replace("bg-", "bg-") + "/20")}>
-            {icon}
-          </div>
-          <span
-            className={cn(
-              "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full",
-              isPositive
-                ? "bg-green-500/20 text-green-400"
-                : "bg-red-500/20 text-red-400"
-            )}
-          >
-            {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-            {Math.abs(growth).toFixed(1)}%
-          </span>
+    <div className="card">
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ padding: "8px", borderRadius: 10, background: "rgba(124,58,237,0.15)" }}>
+          {icon}
         </div>
-        <p className="text-white/50 text-sm mb-1">{title}</p>
-        <p className="text-2xl font-bold text-white">
-          {prefix}{formatNumber(value)}{suffix}
-        </p>
-        <p className="text-xs text-white/30 mt-1">vs. mês passado</p>
+        <span className={isPositive ? "growth-chip growth-pos" : "growth-chip growth-neg"}>
+          {isPositive ? <TrendingUp style={{ width: 12, height: 12 }} /> : <TrendingDown style={{ width: 12, height: 12 }} />}
+          {Math.abs(growth).toFixed(1)}%
+        </span>
       </div>
-    </Card>
+      <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 4 }}>{title}</p>
+      <p style={{ fontSize: 24, fontWeight: 700, color: "#fff" }}>{prefix}{formatNumber(value)}{suffix}</p>
+      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 4 }}>vs. mês passado</p>
+    </div>
   );
 }

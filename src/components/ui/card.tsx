@@ -1,24 +1,17 @@
-import { cn } from "@/lib/utils";
-
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function Card({ className, ...props }: CardProps) {
-  return (
-    <div
-      className={cn("rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-6", className)}
-      {...props}
-    />
-  );
+export function Card({ className, style, ...props }: CardProps) {
+  return <div className={`card${className ? " " + className : ""}`} style={style} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: CardProps) {
-  return <div className={cn("mb-4", className)} {...props} />;
+  return <div className={`card-header${className ? " " + className : ""}`} {...props} />;
 }
 
 export function CardTitle({ className, ...props }: CardProps) {
-  return <h3 className={cn("text-lg font-semibold text-white", className)} {...props} />;
+  return <h3 className={`card-title${className ? " " + className : ""}`} {...props} />;
 }
 
 export function CardContent({ className, ...props }: CardProps) {
-  return <div className={cn("", className)} {...props} />;
+  return <div className={className} {...props} />;
 }

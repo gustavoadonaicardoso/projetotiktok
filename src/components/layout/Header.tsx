@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, RefreshCw } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
@@ -11,15 +11,15 @@ interface HeaderProps {
 
 export function Header({ title, subtitle, action }: HeaderProps) {
   return (
-    <header className="flex items-center justify-between mb-8">
+    <header className="page-header">
       <div>
-        <h1 className="text-2xl font-bold text-white">{title}</h1>
-        {subtitle && <p className="text-white/50 text-sm mt-0.5">{subtitle}</p>}
+        <h1>{title}</h1>
+        {subtitle && <p>{subtitle}</p>}
       </div>
-      <div className="flex items-center gap-3">
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {action}
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="w-4 h-4" />
+        <Button variant="ghost" size="sm">
+          <Bell style={{ width: 16, height: 16 }} />
         </Button>
       </div>
     </header>

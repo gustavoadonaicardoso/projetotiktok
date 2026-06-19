@@ -2,9 +2,9 @@ import { Sidebar } from "@/components/layout/Sidebar";
 
 export default function AnalyticsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#050507]">
+    <div className="app-shell">
       <Sidebar />
-      <main className="ml-64 min-h-screen p-8">{children}</main>
+      <main className="main-content">{children}</main>
     </div>
   );
 }
